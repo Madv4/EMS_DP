@@ -29,10 +29,10 @@
 \toprule
 Roll number & Student name & Batch\\
 \midrule
-AM.SC.U4CSE23306 & Anand Narayan & CSE 2023\\
-AM.SC.U4CSE23346 & S H Saimadhav & CSE 2023\\
-AM.SC.U4CSE23365 & Vaishnav P Nair & CSE 2023\\
-AM.SC.U4CSE23369 & Vishnu M & CSE 2023\\
+AM.SC.U4CSE23306 & Anand Narayan & S7 CSE D\\
+AM.SC.U4CSE23346 & S H Saimadhav & S7 CSE D\\
+AM.SC.U4CSE23365 & Vaishnav P Nair & S7 CSE D\\
+AM.SC.U4CSE23369 & Vishnu M & S7 CSE D\\
 \bottomrule
 \end{tabularx}
 
@@ -324,8 +324,107 @@ Observer & C++ & 67 & 3 & 10/10 user-confirmed & --\\
 \entry{Comparison}{Python uses abstract base classes and concise dynamic dispatch, producing the smallest snippets. Java uses nominal interfaces and explicit classes. JavaScript expresses the roles compactly but validates collaborators and numeric input at runtime. C++ uses abstract classes, virtual dispatch, and explicit ownership choices. Across languages, Strategy preserves a context plus interchangeable pricing policies; Observer preserves subject subscription, event publication, and threshold observers.}
 \entry{Technology discussion}{The language mechanisms differ, but the pattern intent remains stable. Static type systems in Java and C++ make participant contracts explicit at compile time. Python's abstract base classes document the contract with less ceremony. JavaScript relies more heavily on runtime object behavior. The measured process times are reproducibility evidence for this environment and must not be interpreted as isolated algorithm benchmarks.}
 
-% TODO SCREENSHOTS: Add one terminal compile/run capture for each language and pattern under
-% Part3/evidence/test_results/screenshots/. Swagger screenshots are not needed for Part 3.
+% Part 3 Strategy test results
+\begin{figure}[p]
+    \centering
+
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{Java}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/dynamic_tariff_java.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{Python}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/dynamic_tariff_python.png}
+    \end{minipage}
+
+    \vspace{5mm}
+
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{JavaScript}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/dynamic_tariff_javascript.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{C++}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/dynamic_tariff_cpp.png}
+    \end{minipage}
+
+    \caption{Terminal test results for the Dynamic Tariff Strategy implementations.}
+    \label{fig:dynamic-tariff-language-results}
+\end{figure}
+
+% Part 3 Observer test results
+\begin{figure}[p]
+    \centering
+
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{Java}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/consumption_alert_java.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{Python}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/consumption_alert_python.png}
+    \end{minipage}
+
+    \vspace{5mm}
+
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{JavaScript}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/consumption_alert_javascript.png}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\linewidth}
+        \centering
+        \textbf{C++}\\[2pt]
+        \includegraphics[
+            width=\linewidth,
+            height=0.29\textheight,
+            keepaspectratio
+        ]{test_results/consumption_alert_cpp.png}
+    \end{minipage}
+
+    \caption{Terminal test results for the Consumption Alert Observer implementations.}
+    \label{fig:consumption-alert-language-results}
+\end{figure}
+
+\clearpage
 \vspace{26mm}
 
 \section{LLM records and human verification}
@@ -339,6 +438,7 @@ Observer & C++ & 67 & 3 & 10/10 user-confirmed & --\\
 
 \entry{Findings}{The baseline already contains a coherent scheduling core and several architectural collaborations. Part 2 adds dynamic behavior at existing seams: tariff and renewable algorithms become Strategies, renewable construction uses a Factory, and alerts use Observer. Part 3 shows that the participant relationships survive translation across four languages, while source size, type declarations, ownership, and runtime validation differ. Limitations include simulated data, no physical smart-meter adapter, no user/authentication domain, in-memory alerts, no email/SMS delivery, and missing Java/C++ raw timing evidence.}
 
+\newpage
 \textbf{Contributions}\par
 \begin{tabularx}{\linewidth}{@{}llX@{}}
 \toprule
@@ -377,19 +477,24 @@ Evidence: \texttt{Part2/evidence/changes/Change3/}, \texttt{Part2/code/ems/domai
 \bibitem{application} Supplied application archives and evidence package, Team B13, inspected 2026-10-07.
 \end{thebibliography}
 
-\section{Team folder and datasets (take screenshots from the GitHub repository---your team)}
+\section{Team folder and datasets}
 
-% TODO SCREENSHOT: Insert a GitHub repository screenshot showing the complete B13 folder tree here.
-% Ensure the screenshot visibly includes README.md, reports, data/, Part1/, Part2/, and Part3/.
-\vspace{35mm}
-
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[
+        width=\linewidth,
+        height=0.82\textheight,
+        keepaspectratio
+    ]{folder_tree.png}
+    \caption{Complete GitHub repository structure for the B13 team folder, including the README, reports, consolidated datasets, and supporting artifacts for Parts 1, 2, and 3.}
+    \label{fig:b13-folder-tree}
+\end{figure}
 \begin{verbatim}
 B13/
   README.md
   B13_Report.tex
   B13_Report.pdf
   B13_Slides.pptx
-  B13_slide.pdf
   data/
     patterns.csv
     pattern_counts.csv
