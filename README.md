@@ -1,15 +1,15 @@
 # B13 - Design Pattern Identification and Evolution in a FastAPI Energy Management Application
 
-This folder is the B13 submission workspace for the 23CSE455 Design Pattern Case Study. It contains the completed Part 1 baseline analysis, Part 2 evolution evidence, and Part 3 cross-language comparison.
+This folder contains Team B13's completed 23CSE455 Design Pattern Case Study: baseline pattern discovery, three FastAPI evolution scenarios, and a four-language comparison of Strategy and Observer.
 
 ## Team B13
 
 | Roll number | Name | Programme / batch |
 |---|---|---|
-| AM.SC.U4CSE23306 | Anand Narayan | CSE 2023 |
-| AM.SC.U4CSE23346 | S H Saimadhav | CSE 2023 |
-| AM.SC.U4CSE23365 | Vaishnav P Nair | CSE 2023 |
-| AM.SC.U4CSE23369 | Vishnu M | CSE 2023 |
+| AM.SC.U4CSE23306 | Anand Narayan | S7 CSE D |
+| AM.SC.U4CSE23346 | S H Saimadhav | S7 CSE D |
+| AM.SC.U4CSE23365 | Vaishnav P Nair | S7 CSE D |
+| AM.SC.U4CSE23369 | Vishnu M | S7 CSE D |
 
 ## Application and source record
 
@@ -29,7 +29,17 @@ This folder is the B13 submission workspace for the 23CSE455 Design Pattern Case
 | Part 1 - Pattern Discovery | Complete | Seven-area investigation, architecture, confirmed pattern collaborations, exact source mappings, UML, and LLM record |
 | Part 2 - Software Evolution | Complete | Dynamic tariffs, renewable-source integration, consumption alerts, diffs, before/after analysis, tests, updated UML, and LLM record |
 | Part 3 - Cross-Language Analysis | Complete with stated measurement limits | Strategy and Observer implementations cover four languages; test evidence, static metrics, cross-language analysis, and Python/JavaScript timings are recorded |
-| Report and slides | Updated | Covers Parts 1-3 and distinguishes tool-captured results from user-confirmed Java/C++ results |
+| Report | Final content prepared | `B13_Report.tex` follows the prescribed report format and references the architecture, UML, Swagger, terminal, and cross-language evidence images. Add the final GitHub folder-tree screenshot and compile the submission PDF in Overleaf. |
+| Slides | Complete | Ten-slide deck covers Parts 1-3, Part 2 verification, the Part 3 language matrix, and measured timing results. |
+
+## Submission artifacts
+
+- `B13_Report.tex`: editable report source in the prescribed format.
+- `B13_Report.pdf`: compiled report; regenerate this from the latest TeX source after adding the final folder-tree screenshot.
+- `B13_Slides.pptx`: editable presentation covering Parts 1-3.
+- `B13_slide.pdf`: PDF export of the presentation.
+- `.gitignore`: excludes virtual environments, caches, compiled binaries, dependency folders, LaTeX auxiliary files, and IDE metadata.
+- `data/`: consolidated pattern, evolution, cross-language, and LLM datasets.
 
 ## Dataset files
 
@@ -50,6 +60,19 @@ All paths inside CSV cells are relative to this `B13/` folder. CSV files use UTF
 - `Part3/code/`: add the sixteen verified production and test-runner files supplied separately.
 
 These directories are intentionally empty in this package, as requested.
+
+## Evidence images used by the report
+
+The Overleaf report references these filenames:
+
+- Baseline: `architecture.png`, `pattern_uml.png`.
+- Dynamic tariffs: `put_tariff1.png`, `put_tariff2.png`, `put_tariff3.png`, `put_tariff_terminal.png`.
+- Renewable integration: `renewable_class_diagram.png`, `Swagger_post_energy_sources.png`, `swagger_get_energy_sources.png`.
+- Consumption alerts: `alert_sequence_diagram.png`, `put_alerts.png`, `get_alerts.png`, `13_passed.png`.
+- Part 3 Strategy runs: `dynamic_tariff_java.png`, `dynamic_tariff_python.png`, `dynamic_tariff_javascript.png`, `dynamic_tariff_cpp.png`.
+- Part 3 Observer runs: `consumption_alert_java.png`, `consumption_alert_python.png`, `consumption_alert_javascript.png`, `consumption_alert_cpp.png`.
+
+For the GitHub evidence package, retain the diagrams in their existing evidence directories. Store Part 2 Swagger and terminal captures in the appropriate `Part2/evidence/changes/ChangeN/screenshots/` directory. Store the eight Part 3 terminal captures under `Part3/evidence/test_results/screenshots/`. The report may use shorter Overleaf paths because its uploaded image files are colocated with the TeX project.
 
 ## Inspected modules
 
@@ -89,6 +112,23 @@ python -m ems
 
 Verified Part 2 result: `13 passed in 0.53s`. The MILP build-and-solve smoke test also completed. Open Swagger UI at `http://localhost:8000/docs` after starting the application.
 
+## Part 3 execution
+
+Each pattern problem uses the same conceptual cases in Java, Python, JavaScript, and C++. Run the commands from the corresponding language directory after adding the supplied source files to `Part3/code/`.
+
+| Pattern | Language | Command |
+|---|---|---|
+| Dynamic Tariff Strategy | Java | `javac StrategyTariff.java StrategyTariffTest.java && java StrategyTariffTest` |
+| Dynamic Tariff Strategy | Python | `python test_strategy_tariff.py` |
+| Dynamic Tariff Strategy | JavaScript | `node strategyTariff.test.js` |
+| Dynamic Tariff Strategy | C++ | `g++ -std=c++17 -O2 -Wall -Wextra -pedantic test_strategy_tariff.cpp -o test_strategy_tariff` followed by the generated executable |
+| Consumption Alert Observer | Java | `javac ConsumptionAlert.java ConsumptionAlertTest.java && java ConsumptionAlertTest` |
+| Consumption Alert Observer | Python | `python test_consumption_alert.py` |
+| Consumption Alert Observer | JavaScript | `node consumptionAlert.test.js` |
+| Consumption Alert Observer | C++ | `g++ -std=c++17 -O2 -Wall -Wextra -pedantic test_consumption_alert.cpp -o test_consumption_alert` followed by the generated executable |
+
+Expected results are 17/17 for each Strategy implementation and 10/10 for each Observer implementation. Detailed commands, versions, results, and available timings are recorded in `data/cross_language.csv`.
+
 ## Measurement rules
 
 - Source LOC for Part 3: count production-code lines only; exclude blank lines, comments, and test files.
@@ -105,10 +145,3 @@ Verified Part 2 result: `13 passed in 0.53s`. The MILP build-and-solve smoke tes
 - Solar and wind models are deterministic simulation strategies rather than physical forecasting models.
 - Java and C++ test passes are user-confirmed because raw terminal output and toolchain versions were not supplied to this workspace.
 - Java and C++ execution-time fields remain blank because the required five measured runs were not supplied; no timing was estimated.
-
-## Final submission checklist
-
-- Add the original source under `Part1/code/` and evolved source under `Part2/code/`.
-- Add the sixteen Part 3 production and test-runner files under `Part3/code/`.
-- Add Java and C++ terminal captures and five-run timing values if they are available before submission.
-- Recheck all team-relative paths after adding the three code versions.
