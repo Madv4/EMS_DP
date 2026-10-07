@@ -1,0 +1,35 @@
+--- /dev/null
++++ evolved/ems/domain/alerts/alert_subject.py
+@@
++class ConsumptionSubject:
++    def subscribe(self, observer):
++        if observer not in self._observers:
++            self._observers.append(observer)
++
++    def notify(self, event):
++        for observer in tuple(self._observers):
++            observer.update(event)
+
+--- /dev/null
++++ evolved/ems/domain/alerts/consumption_alert.py
+@@
++class ConsumptionAlertObserver(ConsumptionObserver):
++    def update(self, event):
++        for load_id, consumption in event.by_load.items():
++            if consumption > self.threshold:
++                self.alerts.append(
++                    ConsumptionAlert(event.time_index, load_id, consumption, self.threshold)
++                )
+
+--- baseline/ems/application/services/ems_service.py
++++ evolved/ems/application/services/ems_service.py
+@@
+ def advance(context):
+     advancer.next(...)
++    by_load = combined_completed_grid_and_renewable_draw(context)
++    context.consumption_subject.notify(
++        ConsumptionEvent(context.advance_count, by_load)
++    )
+     plan(context)
+
+Evidence note: the complete implementation calculates `by_load` from backward metrics after the existing advance operation.

@@ -1,0 +1,14 @@
+Test: renewable strategies, factory, provider aggregation, and API
+Command: python -m pytest -q test/test_part2_evolution.py
+Result: PASSED
+
+Verified behaviors:
+- EnergySourceFactory creates solar and wind strategies.
+- Solar production is zero at midnight and reaches configured capacity at noon.
+- Wind production equals capacity multiplied by the configured availability fraction.
+- Individual source values sum to MetricKey.REN_PROD.
+- ForecastProvider.validate accepts the evolved provider output.
+- POST and GET /energy-sources configure and return sources.
+- WebSocket snapshots contain renewable_sources.
+
+Full suite at packaging time: 13 passed in 0.53 seconds.

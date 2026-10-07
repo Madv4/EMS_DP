@@ -1,0 +1,11 @@
+case_id,strategy,time_index,flat_price,peak_price,off_peak_price,peak_start,peak_end,dynamic_prices,expected_price,status
+DT01,flat,0,0.15,,,,,,0.15,defined
+DT02,flat,23,0.15,,,,,,0.15,defined
+DT03,time_of_use,17,,0.30,0.15,18,22,,0.15,defined
+DT04,time_of_use,18,,0.30,0.15,18,22,,0.30,defined
+DT05,time_of_use,21,,0.30,0.15,18,22,,0.30,defined
+DT06,time_of_use,22,,0.30,0.15,18,22,,0.15,defined
+DT07,time_of_use,42,,0.30,0.15,18,22,,0.30,defined
+DT08,dynamic,0,,,,,,"0.10|0.20|0.35|0.15",0.10,defined
+DT09,dynamic,2,,,,,,"0.10|0.20|0.35|0.15",0.35,defined
+DT10,dynamic,4,,,,,,"0.10|0.20|0.35|0.15",0.10,defined

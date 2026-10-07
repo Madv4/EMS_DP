@@ -1,0 +1,26 @@
+# Part 2 LLM-assisted design summary
+
+The proposed evolution maps dynamic tariffs to Strategy, individual renewable sources to Strategy with a supporting Factory, and consumption alerts to Observer.
+
+## Dynamic tariffs
+
+Introduce `TariffStrategy.get_price(time_index)` with flat, time-of-use, and supplied dynamic price implementations. Integrate the active policy at the forecast-provider boundary so the existing `GRID_PRICE -> Metrics -> build_params -> solver` flow remains intact.
+
+## Renewable sources
+
+Replace the provider's single renewable-generation behavior with a collection of `RenewableSource` strategies. Add solar and wind implementations and use a factory to create configured sources. Sum their values into the existing `REN_PROD` metric so the optimization model does not change.
+
+## Consumption alerts
+
+Publish a consumption event after actual grid and renewable draw are recorded for a completed simulation step. A subject notifies registered observers. A threshold observer records alerts above its configured limit. Expose threshold configuration and alert results through FastAPI and include alerts in WebSocket snapshots.
+
+## Verification requested by the output
+
+- Independent tests for each concrete strategy.
+- Provider-integration tests for grid price and renewable aggregation.
+- Observer subscription, unsubscription, and threshold tests.
+- Application-service test proving that grid and renewable draw form one consumption value.
+- REST and WebSocket integration checks.
+- Regression execution of the original solver tests.
+
+The implemented result follows this design. Detailed evidence appears under `Part2/evidence/changes/` and `Part2/evidence/diagrams/`.

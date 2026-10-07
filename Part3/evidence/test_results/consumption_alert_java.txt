@@ -1,0 +1,11 @@
+Pattern: Observer - Consumption Threshold Alerts
+Language: Java
+Runtime/compiler: version not supplied
+Working folder: Part3/code/observer_consumption_alert/java
+Command: javac ConsumptionAlert.java ConsumptionAlertTest.java; java ConsumptionAlertTest
+Shared cases: CA01-CA05
+Additional checks: duplicate subscription, unsubscribe, multiple loads, zero and negative thresholds
+Reported output: Observer tests: 10/10 passed
+Result: PASS - user-confirmed
+Verification source: team statement on 2026-10-07 that all implementations run properly
+Limitation: raw terminal output and JDK version were not supplied to this workspace

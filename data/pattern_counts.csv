@@ -1,0 +1,31 @@
+source_version,summary,pattern_name,count
+Original code,per_pattern,Ports and Adapters,2
+Original code,per_pattern,Repository,1
+Original code,per_pattern,Dependency Injection,1
+Original code,per_pattern,Strategy,1
+Original code,per_pattern,Observer,1
+Original code,total_pattern_types,,5
+Original code,total_pattern_instances,,6
+Code after Change1,per_pattern,Ports and Adapters,2
+Code after Change1,per_pattern,Repository,1
+Code after Change1,per_pattern,Dependency Injection,1
+Code after Change1,per_pattern,Strategy,2
+Code after Change1,per_pattern,Observer,1
+Code after Change1,total_pattern_types,,5
+Code after Change1,total_pattern_instances,,7
+Code after Change2,per_pattern,Ports and Adapters,2
+Code after Change2,per_pattern,Repository,1
+Code after Change2,per_pattern,Dependency Injection,1
+Code after Change2,per_pattern,Strategy,3
+Code after Change2,per_pattern,Observer,1
+Code after Change2,per_pattern,Factory,1
+Code after Change2,total_pattern_types,,6
+Code after Change2,total_pattern_instances,,9
+Code after Change3,per_pattern,Ports and Adapters,2
+Code after Change3,per_pattern,Repository,1
+Code after Change3,per_pattern,Dependency Injection,1
+Code after Change3,per_pattern,Strategy,3
+Code after Change3,per_pattern,Observer,2
+Code after Change3,per_pattern,Factory,1
+Code after Change3,total_pattern_types,,6
+Code after Change3,total_pattern_instances,,10

@@ -1,0 +1,9 @@
+pattern_name,language,warmup_ms,run_1_ms,run_2_ms,run_3_ms,run_4_ms,run_5_ms,median_process_ms,status
+Strategy,Java,,,,,,,,not_measured - raw five-run timing not supplied
+Strategy,Python,36.060,21.370,19.697,20.552,20.228,21.104,20.552,measured
+Strategy,JavaScript,79.534,43.947,41.596,39.944,39.761,44.292,41.596,measured
+Strategy,C++,,,,,,,,not_measured - raw five-run timing not supplied
+Observer,Java,,,,,,,,not_measured - raw five-run timing not supplied
+Observer,Python,71.373,44.132,46.052,45.020,45.165,45.273,45.165,measured
+Observer,JavaScript,77.265,43.843,42.998,42.421,42.924,42.287,42.924,measured
+Observer,C++,,,,,,,,not_measured - raw five-run timing not supplied

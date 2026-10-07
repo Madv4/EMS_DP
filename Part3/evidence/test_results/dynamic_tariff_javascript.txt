@@ -1,0 +1,10 @@
+Pattern: Strategy - Dynamic Tariff Selection
+Language: JavaScript
+Runtime: Node.js 24.21.0
+Working folder: Part3/code/strategy_tariff/javascript
+Command: node strategyTariff.test.js
+Shared cases: DT01-DT10
+Additional checks: negative prices, invalid peak window, empty dynamic series, negative indices
+Captured output: Strategy tests: 17/17 passed
+Result: PASS
+Verification source: executed in the package-building workspace on 2026-10-07

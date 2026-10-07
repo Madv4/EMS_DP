@@ -1,0 +1,15 @@
+Test: Observer behavior, EMS integration, REST, and WebSocket output
+Command: python -m pytest -q test/test_part2_evolution.py
+Result: PASSED
+
+Verified behaviors:
+- Consumption below the threshold creates no alert.
+- Consumption above the threshold creates one alert with time index, load ID, value, and threshold.
+- A second observer receives the same events.
+- An unsubscribed observer receives no later events.
+- EMS advance combines grid and renewable draw into one completed-step value.
+- PUT /alerts/threshold changes the rule.
+- GET /alerts returns recorded alerts.
+- WebSocket snapshots contain alerts.
+
+Full suite at packaging time: 13 passed in 0.53 seconds.

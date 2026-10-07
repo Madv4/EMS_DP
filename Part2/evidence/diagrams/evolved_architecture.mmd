@@ -1,0 +1,19 @@
+flowchart TB
+    Client[REST or WebSocket Client] --> API[FastAPI Interface]
+    API --> Runtime[EMS Runtime]
+    API --> EnergyService[Energy Configuration Services]
+    EnergyService --> Tariff[Tariff Strategy]
+    EnergyService --> Factory[Energy Source Factory]
+    Factory --> Sources[Renewable Source Strategies]
+    Tariff --> Provider[Simple Forecast Provider]
+    Sources --> Provider
+    Provider --> Metrics[GRID_PRICE and aggregate REN_PROD]
+    Runtime --> EMS[EMS Application Service]
+    EMS --> Metrics
+    Metrics --> Params[Solver Parameters]
+    Params --> Solvers[MILP or Heuristic Solver]
+    EMS --> Subject[Consumption Subject]
+    Subject --> Alert[Consumption Alert Observer]
+    Alert --> Runtime
+    Runtime --> Snapshot[Portfolio Metrics Sources and Alerts]
+    Snapshot --> Client

@@ -1,0 +1,65 @@
+coverage.xml
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+# Java and JVM build output
+*.class
+.gradle/
+target/
+out/
+# JavaScript and Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.yarn/cache/
+coverage/
+dist/
+.next/
+# C and C++ build output
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+*.pdb
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+cmake-build-*/
+# Shared build directories
+build/
+bin/
+# LaTeX auxiliary files
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.nav
+*.out.ps
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdv
+_minted-*/
+# Temporary and backup files
+*.bak
+*.tmp
+*.temp
+*.orig
+*.rej
+.cache/
+# Keep submission artifacts, evidence, and datasets tracked:
+# *.pdf, *.pptx, *.tex, *.csv, *.md, *.txt, *.png, and source files.

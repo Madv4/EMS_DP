@@ -1,0 +1,17 @@
+Inputs:
+
+1. Original `energy-management-system-main.zip` source.
+2. Part 1 classification:
+   - Energy consumption: present.
+   - Smart meters: absent.
+   - Users: absent.
+   - Tariff management: partial.
+   - Renewable energy: present as an aggregate.
+   - Alerts: absent.
+   - Reporting: partial.
+3. Evolution requirements:
+   - Add dynamic tariffs.
+   - Add renewable-energy integration.
+   - Add consumption alerts.
+4. Constraint: keep the solver input path based on `GRID_PRICE` and `REN_PROD` rather than embedding new policy logic in solvers.
+5. Required evidence: source mapping, UML, before/after analysis, tests, LLM record, and human verification.

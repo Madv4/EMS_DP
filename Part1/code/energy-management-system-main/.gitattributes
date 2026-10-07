@@ -1,0 +1,16 @@
+# Set the default behavior to automatically normalize line endings
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+# This can be useful for specific file types that should always be text.
+*.py text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+
+# Explicitly declare binary files that should not be handled as text.
+# This prevents Git from trying to normalize them, which can corrupt the file.
+*.png binary
+*.jpg binary
+*.svg binary
+*.pdf binary

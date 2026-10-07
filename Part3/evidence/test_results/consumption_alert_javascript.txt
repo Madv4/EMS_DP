@@ -1,0 +1,10 @@
+Pattern: Observer - Consumption Threshold Alerts
+Language: JavaScript
+Runtime: Node.js 24.21.0
+Working folder: Part3/code/observer_consumption_alert/javascript
+Command: node consumptionAlert.test.js
+Shared cases: CA01-CA05
+Additional checks: duplicate subscription, unsubscribe, multiple loads, zero and negative thresholds
+Captured output: Observer tests: 10/10 passed
+Result: PASS
+Verification source: executed in the package-building workspace on 2026-10-07

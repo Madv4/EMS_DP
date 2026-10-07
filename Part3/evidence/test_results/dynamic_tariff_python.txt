@@ -1,0 +1,10 @@
+Pattern: Strategy - Dynamic Tariff Selection
+Language: Python
+Runtime: CPython 3.12.14
+Working folder: Part3/code/strategy_tariff/python
+Command: python test_strategy_tariff.py
+Shared cases: DT01-DT10
+Additional checks: negative prices, invalid peak window, empty dynamic series, negative indices
+Captured output: Strategy tests: 17/17 passed
+Result: PASS
+Verification source: executed in the package-building workspace on 2026-10-07

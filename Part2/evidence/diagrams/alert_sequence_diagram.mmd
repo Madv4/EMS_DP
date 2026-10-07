@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant R as EMSRuntime
+    participant E as ems_service.advance
+    participant M as Backward Metrics
+    participant S as ConsumptionSubject
+    participant A as ConsumptionAlertObserver
+    participant C as REST or WebSocket Client
+
+    R->>E: advance(context)
+    E->>M: record completed grid and renewable draw
+    E->>M: read combined consumption by load
+    E->>S: notify(ConsumptionEvent)
+    S->>A: update(event)
+    A->>A: record values above threshold
+    R->>C: broadcast snapshot with alerts

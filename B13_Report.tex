@@ -1,0 +1,422 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=22mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,tabularx,booktabs,longtable,hyperref,xcolor,graphicx,listings,array,xurl}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\arraystretch}{1.15}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue}
+\newcommand{\entry}[2]{\textbf{#1:} #2\par}
+\newcommand{\codepath}[1]{\nolinkurl{#1}}
+\setlength{\emergencystretch}{3em}
+\lstset{basicstyle=\ttfamily\small,breaklines=true,frame=single,columns=fullflexible}
+
+\begin{document}
+
+\begin{center}
+\Large\textbf{23CSE455 Design Patterns}\\[4pt]
+\LARGE Case Study Report
+\end{center}
+
+\entry{Team}{B13}
+\entry{Case study}{Energy Management Application using FastAPI --- Design Pattern Identification and Evolution in a FastAPI-Based Energy Management Application}
+\entry{Application}{FastAPI Energy Management System for simulated load scheduling, optimization, renewable generation, tariffs, alerts, and runtime monitoring}
+\entry{Date}{2026-10-07}
+\textbf{Submission repository:} \href{https://github.com/aswathymohan-amrita/23CSE455_DP_CaseStudy}{23CSE455\_DP\_CaseStudy}, team folder \codepath{B13/}\par
+
+\textbf{Students}\par
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Roll number & Student name & Batch\\
+\midrule
+AM.SC.U4CSE23306 & Anand Narayan & CSE 2023\\
+AM.SC.U4CSE23346 & S H Saimadhav & CSE 2023\\
+AM.SC.U4CSE23365 & Vaishnav P Nair & CSE 2023\\
+AM.SC.U4CSE23369 & Vishnu M & CSE 2023\\
+\bottomrule
+\end{tabularx}
+
+\section{Application and architecture}
+
+\entry{Original source}{The baseline was supplied as \codepath{energy-management-system-main.zip}. No upstream repository URL, version tag, Git history, or license file was included. The archive SHA-256 is \codepath{A53D974449C1CCC0BA322267DB37BD7CDD626CC8E80C55C604EBEBF757FCC060}; it was inspected on 2026-10-07. The evolved source archive is \codepath{energy-management-system-part2.zip}, SHA-256 \codepath{19A9AAF2447540E38AB6E1667B664E64B535E36B2E8B23580181DF1A1725FD8C}.}
+
+\entry{Environment}{Windows; Python 3.12.14; FastAPI 0.142.2; Pydantic 2.13.5; pytest 9.1.1; PuLP 3.3.2; httpx 0.28.1. The application uses an in-memory repository and simulated forecast data; no external database is required.}
+
+\entry{Scope}{Inspected \codepath{ems/domain/models}, \codepath{ems/domain/ports}, \codepath{ems/application/services}, \codepath{ems/application/solvers}, \codepath{ems/infrastructure}, \codepath{ems/interface}, and \codepath{test}. Generated files, virtual environments, dependency packages, and caches were excluded. Part 1 evaluates the supplied baseline; Part 2 evaluates the evolved application; Part 3 evaluates isolated equivalent pattern problems.}
+
+\entry{Architecture}{The application follows a layered Ports-and-Adapters structure. FastAPI REST routes and WebSocket handling form the interface layer. Application services coordinate portfolio changes, metric advancement, planning, and configuration. Domain models and ports describe portfolios, loads, metrics, forecasts, repositories, and energy configuration. Infrastructure adapters provide simulated forecasts and in-memory persistence. A normal request enters through FastAPI, resolves the shared runtime through dependency injection, calls an application service, updates domain state, and returns or broadcasts the serialized result.}
+
+\begin{figure}[ht]\centering
+\includegraphics[width=0.90\linewidth]{architecture.png}
+\caption{Baseline application architecture.}\end{figure}
+\vspace{32mm}
+
+\entry{Run instructions}{After placing the evolved source in \codepath{Part2/code}, create and activate a virtual environment, run \codepath{pip install -r requirements-dev.txt}, execute \codepath{python -m pytest -q test}, execute \codepath{python -m test.test_milp_solver}, and start the server with \codepath{python -m ems}. The verified automated result was 13 tests passed in 0.53 seconds; the MILP build-and-solve smoke test also completed. Swagger UI is available at \url{http://localhost:8000/docs} while the server is running.}
+
+\section{Part 1 Pattern discovery}
+
+\entry{Method}{Candidates were located by tracing abstractions, construction points, injected dependencies, interchangeable algorithms, subscriber collections, and calls across the interface, application, domain, and infrastructure layers. Every confirmed collaboration was checked for intent, participants, delegation, runtime behavior, and exact source locations. Capability names alone were not treated as proof of a design pattern. Results are recorded in \codepath{data/patterns.csv}, \codepath{data/pattern_counts.csv}, and \codepath{Part1/evidence/patterns/pattern_mapping.md}.}
+
+\subsection{Totals at the baseline}
+
+\entry{Confirmed pattern types}{5 distinct types: Ports and Adapters, Repository, Dependency Injection, Strategy, and Observer.}
+\entry{Confirmed pattern instances}{6 collaborations: two Ports-and-Adapters boundaries and one instance each of Repository, Dependency Injection, Strategy, and Observer.}
+\entry{Concrete participant classes}{3 distinct application-defined concrete classes in variable runtime roles: \codepath{SimpleForecastProvider}, \codepath{SimplePortfolioRepository}, and \codepath{EMSRuntime}. Solver strategies are functions, and connected WebSocket clients are runtime framework objects rather than additional application classes.}
+\entry{Unique participant symbols}{13 explicitly named application symbols after shared participants are counted once: \codepath{ForecastProvider}, \codepath{SimpleForecastProvider}, \codepath{ems_service.advance}, \codepath{PortfolioRepository}, \codepath{SimplePortfolioRepository}, \codepath{manage_portfolio.create_portfolio}, \codepath{get_runtime}, \codepath{EMSRuntime}, \codepath{websocket_endpoint}, \codepath{deploy_plan.generate_plan}, both solver \codepath{solve} functions, and \codepath{EMSRuntime.broadcast}. REST route handlers are treated as one dependent group rather than inflated into separate pattern instances.}
+\entry{Rejected and uncertain candidates}{No separate baseline Factory, alert Observer, smart-meter Adapter, or reporting pattern was confirmed. Dataclass \codepath{default_factory} usage was rejected as language-library construction syntax rather than a Factory pattern. WebSocket broadcasting was confirmed as Observer-style runtime monitoring, but it was rejected as evidence of a consumption-alert system because no threshold rule or alert record existed. Observation scope is limited to the supplied application source.}
+
+\subsection{Pattern inventory}
+
+\begin{tabularx}{\linewidth}{@{}lXrr@{}}
+\toprule
+Pattern type & Instance names & Instances & Concrete classes\\
+\midrule
+Ports and Adapters & Forecast Provider Boundary; Portfolio Persistence Boundary & 2 & 2\\
+Repository & Portfolio Repository & 1 & 1\\
+Dependency Injection & FastAPI Runtime Injection & 1 & 1\\
+Strategy & Solver Selection & 1 & 0 (2 functions)\\
+Observer & WebSocket Runtime Updates & 1 & 1 plus runtime clients\\
+\midrule
+\textbf{Total} & & \textbf{6} & \textbf{3 distinct application classes}\\
+\bottomrule
+\end{tabularx}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[
+        width=\linewidth,
+        height=0.82\textheight,
+        keepaspectratio
+    ]{pattern_uml.png}
+    \caption{Baseline pattern participant UML.}
+    \label{fig:baseline-pattern-uml}
+\end{figure}
+\vspace{30mm}
+
+\subsection{One record for each pattern instance}
+
+\subsubsection{Forecast Provider Boundary}
+\entry{Pattern type and category}{Ports and Adapters; architectural pattern.}
+\entry{Purpose and origin}{Keeps forecast generation behind a domain-facing port. It originates in the supplied application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Port & \codepath{ForecastProvider} & \codepath{Part1/code/ems/domain/ports/forecast_provider.py:5-20}\\
+Adapter & \codepath{SimpleForecastProvider} & \codepath{Part1/code/ems/infrastructure/simple_forecast_provider.py:6-18}\\
+Client & \codepath{ems_service.advance} & \codepath{Part1/code/ems/application/services/ems_service.py:46-50}\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{Application services depend on the forecast abstraction while the infrastructure adapter implements simulated forecast generation.}
+\entry{Diagram}{Editable source: \codepath{Part1/evidence/patterns/pattern_uml.mmd}; rendered image: \codepath{Part1/evidence/patterns/pattern_uml.png}.}
+\entry{Verification}{Confirmed by mapping the port declaration, implementation, and client call. Reviewer: Team B13. Alternative rejected: direct service-owned forecast generation.}
+
+\subsubsection{Portfolio Persistence Boundary}
+\entry{Pattern type and category}{Ports and Adapters; architectural pattern.}
+\entry{Purpose and origin}{Separates application services from the in-memory persistence mechanism. It originates in the supplied application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Port & \codepath{PortfolioRepository} & \codepath{Part1/code/ems/domain/ports/portfolio_repository.py:8-21}\\
+Adapter & \codepath{SimplePortfolioRepository} & \codepath{Part1/code/ems/infrastructure/simple_portfolio_repository.py:7-17}\\
+Client & \codepath{manage_portfolio.create_portfolio} & \codepath{Part1/code/ems/application/services/manage_portfolio.py:9-17}\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{The service calls a domain-facing repository contract; the concrete adapter owns the storage collection and persistence operations.}
+\entry{Diagram}{The collaboration is included in \codepath{Part1/evidence/patterns/pattern_uml.mmd}.}
+\entry{Verification}{Confirmed by tracing create, get, and delete calls from the service to the port and concrete adapter. Reviewer: Team B13.}
+
+\subsubsection{Portfolio Repository}
+\entry{Pattern type and category}{Repository; architectural/domain pattern.}
+\entry{Purpose and origin}{Centralizes portfolio persistence operations and prevents application services from manipulating the storage collection directly. It originates in the supplied application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Repository contract & \codepath{PortfolioRepository} & \codepath{Part1/code/ems/domain/ports/portfolio_repository.py:8-21}\\
+Concrete repository & \codepath{SimplePortfolioRepository} & \codepath{Part1/code/ems/infrastructure/simple_portfolio_repository.py:7-17}\\
+Client & Portfolio-management service functions & \codepath{Part1/code/ems/application/services/manage_portfolio.py:9-17}\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{Add, retrieve, and delete behavior is exposed through one repository contract. This instance shares participants with the persistence port-and-adapter boundary but expresses a separate repository intent.}
+\entry{Diagram}{The collaboration is included in \codepath{Part1/evidence/patterns/pattern_uml.mmd}.}
+\entry{Verification}{Confirmed. Reviewer: Team B13. The shared participants are counted once in the unique-symbol total.}
+
+\subsubsection{FastAPI Runtime Injection}
+\entry{Pattern type and category}{Dependency Injection; framework idiom and architectural pattern.}
+\entry{Purpose and origin}{Supplies one shared runtime to REST and WebSocket handlers without constructing it inside each handler. It originates in the supplied FastAPI application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Provider & \codepath{get_runtime} & \codepath{Part1/code/ems/interface/runtime.py:136-138}\\
+Injected object & \codepath{EMSRuntime} & \codepath{Part1/code/ems/interface/runtime.py:11-138}\\
+Dependents & REST route handlers & \codepath{Part1/code/ems/interface/endpoints.py:46-113}\\
+Dependent & \codepath{websocket_endpoint} & \codepath{Part1/code/ems/interface/websocket.py:7-22}\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{FastAPI \codepath{Depends(get_runtime)} resolves the runtime and passes it to handler parameters.}
+\entry{Diagram}{The dependency direction is shown in \codepath{Part1/evidence/architecture/architecture.mmd}.}
+\entry{Verification}{Confirmed through route signatures and the provider function. Reviewer: Team B13.}
+
+\subsubsection{Solver Selection}
+\entry{Pattern type and category}{Strategy; GoF behavioral pattern expressed with functions.}
+\entry{Purpose and origin}{Attempts MILP planning first and invokes a compatible heuristic fallback when the primary result is unavailable. It originates in the supplied application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Context & \codepath{deploy_plan.generate_plan} & \codepath{Part1/code/ems/application/services/deploy_plan.py:16-34}\\
+Concrete strategy & \codepath{milp_solver.solve} & \codepath{Part1/code/ems/application/solvers/milp_solver.py:124-135}\\
+Concrete strategy & \codepath{heuristic_solver.solve} & \codepath{Part1/code/ems/application/solvers/heuristic_solver.py:205-308}\\
+Strategy interface & Not separately declared & Compatible function-level input/output contract\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{The context delegates to the primary solver and conditionally delegates to the fallback through a compatible result contract.}
+\entry{Diagram}{The functional Strategy mapping is shown in \codepath{Part1/evidence/patterns/pattern_uml.mmd}.}
+\entry{Verification}{Confirmed as a strategy-like collaboration without inventing a missing interface class. Reviewer: Team B13.}
+
+\subsubsection{WebSocket Runtime Updates}
+\entry{Pattern type and category}{Observer; GoF behavioral pattern expressed through runtime client objects.}
+\entry{Purpose and origin}{Maintains connected WebSocket subscribers and broadcasts application-state snapshots. It originates in the supplied application.}
+\textbf{Participant mapping}\par
+\begin{tabularx}{\linewidth}{@{}lXX@{}}
+\toprule
+Pattern role & Actual class, interface and function & File and line range\\
+\midrule
+Subject / concrete subject & \codepath{EMSRuntime} & \codepath{Part1/code/ems/interface/runtime.py:11-103}\\
+Observer interface & Not separately declared & WebSocket send contract\\
+Concrete observers & Connected WebSocket clients & Runtime objects stored by \codepath{EMSRuntime}\\
+Attach / detach & \codepath{websocket_endpoint} & \codepath{Part1/code/ems/interface/websocket.py:7-22}\\
+Notify & \codepath{EMSRuntime.broadcast} & \codepath{Part1/code/ems/interface/runtime.py:11-103}\\
+\bottomrule
+\end{tabularx}
+\entry{Evidence}{The runtime owns a subscriber list and sends each snapshot to registered WebSocket clients.}
+\entry{Diagram}{The Observer collaboration is shown in \codepath{Part1/evidence/patterns/pattern_uml.mmd}.}
+\entry{Verification}{Confirmed as runtime state publication. It is not classified as a consumption-alert system because the baseline has no alert rule. Reviewer: Team B13.}
+
+\section{Part 2 Evolution and refactoring}
+
+\subsection{CH01 --- Dynamic tariffs}
+\entry{Change and acceptance criteria}{Introduce interchangeable flat, time-of-use, and dynamic tariff policies. The selected policy must populate \codepath{GRID_PRICE}; \codepath{PUT /tariff} must accept valid configurations and reject incomplete or unsupported configurations.}
+\entry{Before and after}{Before: price values were generated directly by the forecast provider. After: \codepath{TariffStrategy}, \codepath{FlatTariff}, \codepath{TimeOfUseTariff}, and \codepath{DynamicTariff} calculate prices. Exact Git commits are unavailable because the supplied archive had no history. Evidence: \codepath{Part2/evidence/changes/Change1/implementation.diff}.}
+\entry{Implementation and tests}{The provider delegates price calculation to its configured strategy while the solver input remains \codepath{GRID_PRICE}. Tests cover flat, peak-window, repeating-series, provider-integration, and invalid-request behavior. Command: \codepath{python -m pytest -q test}; full-suite result: 13 passed in 0.53 seconds. Log: \codepath{Part2/evidence/changes/Change1/test_result.txt}.}
+\entry{Pattern effects}{New instance: Dynamic Tariff Selection, Strategy. The existing Forecast Provider Boundary is modified; FastAPI Runtime Injection is extended to the new route; Solver Selection and the remaining baseline collaborations are preserved. Pattern instances increase from 6 to 7.}
+\entry{Refactoring}{Smell: price-generation policy was embedded in the forecast adapter. Technique: Extract Strategy and dependency configuration. Behavior preservation: the provider still emits \codepath{GRID_PRICE}, so both solvers retain the same parameter contract.}
+\entry{Before/after metrics}{Pattern types remain 5; instances increase from 6 to 7. Full-suite result after the completed evolution is 13/13. A separate comparable source-LOC measurement was not captured.}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.32\linewidth]{put_tariff1.png}\hfill
+    \includegraphics[width=0.32\linewidth]{put_tariff2.png}\hfill
+    \includegraphics[width=0.32\linewidth]{put_tariff3.png}
+    \caption{Swagger UI evidence for the three dynamic-tariff configurations.}
+    \label{fig:put-tariff-swagger}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.90\linewidth]{put_tariff_terminal.png}
+    \caption{Terminal verification for dynamic-tariff behavior.}
+    \label{fig:put-tariff-terminal}
+\end{figure}
+
+
+\subsection{CH02 --- Renewable-energy integration}
+\entry{Change and acceptance criteria}{Introduce named solar and wind sources with source-specific production rules, aggregate their values into \codepath{REN_PROD}, and expose configuration and summaries through \codepath{POST /energy-sources}, \codepath{GET /energy-sources}, and WebSocket state.}
+\entry{Before and after}{Before: one aggregate simulated renewable value. After: \codepath{RenewableSource}, \codepath{SolarSource}, \codepath{WindSource}, and \codepath{EnergySourceFactory}. Exact commits are unavailable; evidence: \codepath{Part2/evidence/changes/Change2/implementation.diff}.}
+\entry{Implementation and tests}{Solar uses a repeatable daylight profile; wind multiplies capacity by an availability series; the provider aggregates the sources. Tests cover both algorithms, factory creation, aggregation, REST output, and WebSocket output. Log: \codepath{Part2/evidence/changes/Change2/test_result.txt}.}
+\entry{Pattern effects}{New Strategy instance: Renewable Production. New Factory instance: Renewable Source Creation. The Forecast Provider Boundary is modified; runtime injection and WebSocket output are extended; prior instances are preserved. Pattern types increase from 5 to 6 and instances from 7 to 9.}
+\entry{Refactoring}{Smell: renewable behavior was represented by one undifferentiated value. Techniques: Extract Strategy and Introduce Factory. Behavior preservation: the solvers still receive the aggregate \codepath{REN_PROD} metric.}
+\entry{Before/after metrics}{Pattern types: 5 to 6. Pattern instances: 7 to 9. Full-suite result after the completed evolution: 13/13. A separate comparable source-LOC measurement was not captured.}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.90\linewidth]{renewable_class_diagram.png}
+    \caption{Class diagram for renewable-source integration.}
+    \label{fig:renewable-class-diagram}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\linewidth]{Swagger_post_energy_sources.png}\hfill
+    \includegraphics[width=0.48\linewidth]{swagger_get_energy_sources.png}
+    \caption{Swagger UI evidence for adding and retrieving renewable-energy sources.}
+    \label{fig:energy-source-swagger}
+\end{figure}
+\subsection{CH03 --- Consumption alerts}
+\entry{Change and acceptance criteria}{Publish completed per-load consumption events, record values strictly greater than a configurable threshold, expose \codepath{PUT /alerts/threshold} and \codepath{GET /alerts}, and include alerts in WebSocket snapshots.}
+\entry{Before and after}{Before: completed grid and renewable draw were stored only as metrics. After: \codepath{ConsumptionEvent}, \codepath{ConsumptionSubject}, \codepath{ConsumptionObserver}, and \codepath{ConsumptionAlertObserver}. Exact commits are unavailable; evidence: \codepath{Part2/evidence/changes/Change3/implementation.diff}.}
+\entry{Implementation and tests}{After backward metrics are updated, the application publishes a per-load event. The subject notifies subscribed observers; the alert observer stores records when combined draw is strictly greater than the threshold. Tests cover below, equal, and above-threshold cases, subscribe/unsubscribe, service integration, REST, and WebSocket behavior. Log: \codepath{Part2/evidence/changes/Change3/test_result.txt}.}
+\entry{Pattern effects}{New instance: Consumption Threshold Alerts, Observer. Runtime Injection and WebSocket Runtime Updates are extended; all other existing instances are preserved. Pattern types remain 6 and instances increase from 9 to 10.}
+\entry{Refactoring}{Smell: adding alert rules directly to metric advancement would couple the application service to one reaction. Technique: Introduce Observer and event publication. Behavior preservation: completed metrics are still recorded before the event is published.}
+\entry{Before/after metrics}{Pattern types remain 6. Pattern instances: 9 to 10. Full-suite result: 13 tests passed in 0.53 seconds; the MILP regression smoke test completed. A separate comparable source-LOC measurement was not captured.}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.90\linewidth]{alert_sequence_diagram.png}
+    \caption{Sequence diagram for consumption-alert publication and notification.}
+    \label{fig:alert-sequence-diagram}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.48\linewidth]{put_alerts.png}\hfill
+    \includegraphics[width=0.48\linewidth]{get_alerts.png}
+    \caption{Swagger UI evidence for configuring and retrieving consumption alerts.}
+    \label{fig:alerts-swagger}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.90\linewidth]{13_passed.png}
+    \caption{Terminal output showing the complete 13-test suite passing.}
+    \label{fig:tests-passed}
+\end{figure}
+
+\subsection{Updated pattern counts}
+
+\begin{tabularx}{\linewidth}{@{}Xrrl@{}}
+\toprule
+Snapshot & Pattern types & Instances & Main effect\\
+\midrule
+Original code & 5 & 6 & Baseline\\
+After CH01 & 5 & 7 & New tariff Strategy\\
+After CH02 & 6 & 9 & Renewable Strategy and Factory\\
+After CH03 & 6 & 10 & New alert Observer\\
+\bottomrule
+\end{tabularx}
+
+\entry{Interpretation}{The changes add variation at existing boundaries instead of replacing the optimization core. Strategy keeps pricing and source behavior interchangeable; Factory centralizes renewable-source construction; Observer separates consumption updates from alert rules. Trade-offs include more domain types, configuration validation, in-memory alert retention, and deterministic simulation models rather than physical telemetry. More LOC is not treated as proof of improved design.}
+
+\section{Part 3 Cross-language comparison}
+
+\entry{Selected instances}{Dynamic Tariff Selection (Strategy) and Consumption Threshold Alerts (Observer). They are significant because both were introduced during Part 2, have clearly identifiable participants, and can be reduced to small problems with deterministic shared cases.}
+\entry{Common specifications}{Strategy cases cover flat prices, time-of-use peak boundaries, repeating dynamic series, context delegation, and invalid inputs. Observer cases cover below, equal, and above-threshold values, multiple observers, unsubscribe behavior, and event data. Shared fixtures are \codepath{Part3/test_cases/dynamic_tariff.csv} and \codepath{Part3/test_cases/consumption_alert.csv}.}
+\entry{Implementations}{Each problem has Java, Python, JavaScript, and C++ production snippets with separate test runners under \codepath{Part3/code}. Java uses \codepath{javac/java}; Python uses \codepath{python}; JavaScript uses Node.js; C++ uses a C++17 compiler. Exact commands are recorded in \codepath{data/cross_language.csv} and \codepath{Part3/README.md}.}
+\entry{Actual results}{Python and JavaScript output was captured in the evidence workspace. Java and C++ passes were confirmed by the team, but raw terminal output and toolchain versions were not supplied. No missing timing was estimated. Logs are under \codepath{Part3/evidence/test_results}.}
+
+\begin{center}
+\small
+\begin{tabular}{@{}llrrll@{}}
+\toprule
+Pattern & Language & LOC & Max CC & Test result & Median ms\\
+\midrule
+Strategy & Java & 72 & 5 & 17/17 user-confirmed & --\\
+Strategy & Python & 51 & 3 & 17/17 tool-captured & 20.552\\
+Strategy & JavaScript & 71 & 5 & 17/17 tool-captured & 41.596\\
+Strategy & C++ & 82 & 5 & 17/17 user-confirmed & --\\
+Observer & Java & 86 & 3 & 10/10 user-confirmed & --\\
+Observer & Python & 43 & 3 & 10/10 tool-captured & 45.165\\
+Observer & JavaScript & 63 & 3 & 10/10 tool-captured & 42.924\\
+Observer & C++ & 67 & 3 & 10/10 user-confirmed & --\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\entry{Static and dynamic comparison}{LOC excludes blank lines, comments, and tests. Maximum cyclomatic complexity follows the decision-counting rule documented in \codepath{Part3/evidence/metrics.md}. Timings include process startup, test execution, and output; one warmup and five measured runs were used. Raw values and medians are in \codepath{Part3/evidence/execution_times}. Python 3.12.14 and Node.js 24.21.0 were measured. Java and C++ timing fields remain blank because the required runs were unavailable.}
+\entry{Comparison}{Python uses abstract base classes and concise dynamic dispatch, producing the smallest snippets. Java uses nominal interfaces and explicit classes. JavaScript expresses the roles compactly but validates collaborators and numeric input at runtime. C++ uses abstract classes, virtual dispatch, and explicit ownership choices. Across languages, Strategy preserves a context plus interchangeable pricing policies; Observer preserves subject subscription, event publication, and threshold observers.}
+\entry{Technology discussion}{The language mechanisms differ, but the pattern intent remains stable. Static type systems in Java and C++ make participant contracts explicit at compile time. Python's abstract base classes document the contract with less ceremony. JavaScript relies more heavily on runtime object behavior. The measured process times are reproducibility evidence for this environment and must not be interpreted as isolated algorithm benchmarks.}
+
+% TODO SCREENSHOTS: Add one terminal compile/run capture for each language and pattern under
+% Part3/evidence/test_results/screenshots/. Swagger screenshots are not needed for Part 3.
+\vspace{26mm}
+
+\section{LLM records and human verification}
+
+\entry{Run and model}{Part 1: model and date were not recorded in the supplied transcript. Part 2: GPT-6, 2026-10-07. Part 3: GPT-6, 2026-10-07. Access-tier details were not recorded.}
+\entry{Inputs and outputs}{Part 1 records: \codepath{Part1/llm/part1_pattern_analysis}. Part 2 records: \codepath{Part2/llm/software_evolution}. Part 3 records: \codepath{Part3/llm/cross_language_implementation}. Each directory contains \codepath{prompt.txt}, \codepath{input.txt}, \codepath{output.txt}, and \codepath{verification.md}. The consolidated index is \codepath{data/llm.csv}.}
+\entry{Claims and evaluation}{Part 1 was partially correct: capability classifications and candidates were checked against source, and exact roles and locations were corrected in \codepath{data/patterns.csv}. Part 2 was correct after human verification through 13 tests and a MILP smoke test. Part 3 was partial: semantics and Python/JavaScript runs were confirmed; Java/C++ passes are team-confirmed, while raw timings and toolchain versions remain unavailable. Reviewers: Team B13.}
+\entry{Generated code}{Part 2 generated changes were validated through the full application test suite and MILP smoke test. Part 3 generated snippets were checked against shared cases; Python and JavaScript were executed in the evidence workspace, and Java/C++ execution was confirmed by the team.}
+
+\section{Findings, contributions and references}
+
+\entry{Findings}{The baseline already contains a coherent scheduling core and several architectural collaborations. Part 2 adds dynamic behavior at existing seams: tariff and renewable algorithms become Strategies, renewable construction uses a Factory, and alerts use Observer. Part 3 shows that the participant relationships survive translation across four languages, while source size, type declarations, ownership, and runtime validation differ. Limitations include simulated data, no physical smart-meter adapter, no user/authentication domain, in-memory alerts, no email/SMS delivery, and missing Java/C++ raw timing evidence.}
+
+\textbf{Contributions}\par
+\begin{tabularx}{\linewidth}{@{}llX@{}}
+\toprule
+Roll number & Name and batch & Actual contribution / evidence link\\
+\midrule
+AM.SC.U4CSE23306 &
+Anand Narayan, CSE &
+Analysed the original application architecture and identified the baseline design patterns; prepared the Part 1 architecture and pattern evidence; implemented and verified the Java Strategy and Observer examples for Part 3; jointly reviewed the report and datasets.
+Evidence: \texttt{Part1/evidence/architecture/}, \texttt{Part1/evidence/patterns/}, and \texttt{Part3/code/*/java/}.\\
+
+AM.SC.U4CSE23346 &
+S H Saimadhav, CSE &
+Designed and implemented the dynamic-tariff evolution using the Strategy pattern; prepared the Change 1 requirement, source mapping, before/after analysis, diff, and test evidence; implemented and verified the Python Strategy and Observer examples for Part 3; jointly validated the final report and CSV records.
+Evidence: \texttt{Part2/evidence/changes/Change1/}, \texttt{Part2/code/ems/domain/tariff/}, and \texttt{Part3/code/*/python/}.\\
+
+AM.SC.U4CSE23365 &
+Vaishnav P Nair, CSE &
+Designed and implemented solar and wind renewable-source integration using Strategy and Factory; prepared the Change 2 requirement, source mapping, before/after analysis, diff, and test evidence; implemented and verified the JavaScript Strategy and Observer examples for Part 3; jointly checked UML diagrams and repository organization.
+Evidence: \texttt{Part2/evidence/changes/Change2/}, \texttt{Part2/code/ems/domain/energy\_sources/}, and \texttt{Part3/code/*/javascript/}.\\
+
+AM.SC.U4CSE23369 &
+Vishnu M, CSE &
+Designed and implemented consumption alerts using the Observer pattern; prepared the Change 3 requirement, source mapping, before/after analysis, diff, and test evidence; implemented and verified the C++ Strategy and Observer examples for Part 3; jointly performed regression testing and reviewed the final metrics and documentation.
+Evidence: \texttt{Part2/evidence/changes/Change3/}, \texttt{Part2/code/ems/domain/alerts/}, and \texttt{Part3/code/*/cpp/}.\\
+\bottomrule
+\end{tabularx}
+
+\textbf{References}\par
+\begin{thebibliography}{9}
+\bibitem{fastapi} FastAPI documentation, \url{https://fastapi.tiangolo.com/}.
+\bibitem{pythonabc} Python documentation, \emph{abc --- Abstract Base Classes}, \url{https://docs.python.org/3/library/abc.html}.
+\bibitem{javainterfaces} Oracle Java documentation, \emph{Interfaces}, \url{https://docs.oracle.com/javase/tutorial/java/IandI/createinterface.html}.
+\bibitem{mdnclasses} MDN Web Docs, \emph{JavaScript classes}, \url{https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes}.
+\bibitem{cppvirtual} cppreference, \emph{Virtual functions}, \url{https://en.cppreference.com/w/cpp/language/virtual.html}.
+\bibitem{gof} E. Gamma, R. Helm, R. Johnson, and J. Vlissides, \emph{Design Patterns: Elements of Reusable Object-Oriented Software}, Addison-Wesley, 1994.
+\bibitem{application} Supplied application archives and evidence package, Team B13, inspected 2026-10-07.
+\end{thebibliography}
+
+\section{Team folder and datasets (take screenshots from the GitHub repository---your team)}
+
+% TODO SCREENSHOT: Insert a GitHub repository screenshot showing the complete B13 folder tree here.
+% Ensure the screenshot visibly includes README.md, reports, data/, Part1/, Part2/, and Part3/.
+\vspace{35mm}
+
+\begin{verbatim}
+B13/
+  README.md
+  B13_Report.tex
+  B13_Report.pdf
+  B13_Slides.pptx
+  B13_slide.pdf
+  data/
+    patterns.csv
+    pattern_counts.csv
+    patterns_evolution.csv
+    cross_language.csv
+    llm.csv
+  Part1/
+    code/
+    evidence/
+      architecture/
+      patterns/
+    llm/
+  Part2/
+    code/
+    evidence/
+      changes/Change1/
+      changes/Change2/
+      changes/Change3/
+      diagrams/
+    llm/
+  Part3/
+    code/
+    test_cases/
+    evidence/
+      test_results/
+      execution_times/
+    llm/
+\end{verbatim}
+
+\end{document}

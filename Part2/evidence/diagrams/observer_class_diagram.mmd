@@ -1,0 +1,26 @@
+classDiagram
+    class ConsumptionEvent {
+      +time_index int
+      +by_load dict
+    }
+    class ConsumptionObserver {
+      <<abstract>>
+      +update(event)
+    }
+    class ConsumptionSubject {
+      -observers list
+      +subscribe(observer)
+      +unsubscribe(observer)
+      +notify(event)
+    }
+    class ConsumptionAlertObserver {
+      +threshold float
+      +alerts list
+      +set_threshold(value)
+      +update(event)
+    }
+    ConsumptionObserver <|-- ConsumptionAlertObserver
+    ConsumptionSubject o-- ConsumptionObserver : subscribers
+    ConsumptionSubject --> ConsumptionEvent : publishes
+    EMSContext --> ConsumptionSubject
+    EMSContext --> ConsumptionAlertObserver

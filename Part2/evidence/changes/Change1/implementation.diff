@@ -1,0 +1,31 @@
+--- baseline/ems/infrastructure/simple_forecast_provider.py
++++ evolved/ems/infrastructure/simple_forecast_provider.py
+@@
+-    def __init__(self):
++    def __init__(self, tariff: TariffStrategy | None = None, sources=None):
+         self.random = random.Random(42)
++        self.tariff = tariff
++        self.time_index = 0
+@@
+-            MetricKey.GRID_PRICE: self.random.uniform(0.1, 0.3),
++        price = self.tariff.get_price(self.time_index) if self.tariff else self.random.uniform(0.1, 0.3)
++        return {
++            MetricKey.GRID_PRICE: price,
+
+--- /dev/null
++++ evolved/ems/domain/tariff/tariff_strategy.py
+@@
++class TariffStrategy(ABC):
++    @abstractmethod
++    def get_price(self, time_index: int) -> float:
++        raise NotImplementedError
+
+--- /dev/null
++++ evolved/ems/domain/tariff/time_of_use_tariff.py
+@@
++class TimeOfUseTariff(TariffStrategy):
++    def get_price(self, time_index: int) -> float:
++        hour = time_index % 24
++        return self.peak_price if self.peak_start <= hour < self.peak_end else self.off_peak_price
+
+Evidence note: this focused diff shows the pattern insertion point. The final evolved code also contains validation, flat and dynamic concrete strategies, service configuration, and the FastAPI route.

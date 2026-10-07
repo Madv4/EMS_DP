@@ -1,0 +1,6 @@
+case_id,threshold,time_index,load_id,grid_draw,renewable_draw,expected_alert_count,expected_consumption,status
+CA01,10.0,0,load-a,5.0,0.0,0,5.0,defined
+CA02,10.0,1,load-a,7.0,5.0,1,12.0,defined
+CA03,10.0,2,load-a,10.0,0.0,0,10.0,defined
+CA04,0.05,3,load-b,0.04,0.02,1,0.06,defined
+CA05,20.0,4,load-c,12.0,9.0,1,21.0,defined

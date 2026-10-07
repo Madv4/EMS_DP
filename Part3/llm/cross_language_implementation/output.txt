@@ -1,0 +1,17 @@
+The model produced sixteen source files: one production implementation and one test runner for each combination of two patterns and four languages.
+
+Strategy files:
+- Java: StrategyTariff.java; StrategyTariffTest.java
+- Python: strategy_tariff.py; test_strategy_tariff.py
+- JavaScript: strategyTariff.js; strategyTariff.test.js
+- C++: strategy_tariff.hpp; test_strategy_tariff.cpp
+
+Observer files:
+- Java: ConsumptionAlert.java; ConsumptionAlertTest.java
+- Python: consumption_alert.py; test_consumption_alert.py
+- JavaScript: consumptionAlert.js; consumptionAlert.test.js
+- C++: consumption_alert.hpp; test_consumption_alert.cpp
+
+Every Strategy runner covers DT01-DT10 plus seven validation cases and reports 17/17 passed. Every Observer runner covers CA01-CA05 plus duplicate subscription, unsubscribe, multiple-load behavior, and two invalid thresholds and reports 10/10 passed.
+
+The model also supplied working-directory-specific compile and run commands for every language. No external test framework is required.

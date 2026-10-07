@@ -1,0 +1,33 @@
+--- /dev/null
++++ evolved/ems/domain/energy_sources/source.py
+@@
++class RenewableSource(ABC):
++    @abstractmethod
++    def get_available_energy(self, time_index: int) -> float:
++        raise NotImplementedError
+
+--- /dev/null
++++ evolved/ems/domain/energy_sources/factory.py
+@@
++class EnergySourceFactory:
++    @staticmethod
++    def create(kind, source_id, capacity, availability=None):
++        if kind == "solar":
++            return SolarSource(source_id, capacity)
++        if kind == "wind":
++            return WindSource(source_id, capacity, availability)
++        raise ValueError(f"unknown renewable source type: {kind}")
+
+--- baseline/ems/infrastructure/simple_forecast_provider.py
++++ evolved/ems/infrastructure/simple_forecast_provider.py
+@@
+-            MetricKey.REN_PROD: self.random.uniform(2.0, 8.0),
++        production = {
++            source_id: source.get_available_energy(self.time_index)
++            for source_id, source in self.sources.items()
++        }
++        renewable = sum(production.values())
++        self.last_source_production = production
++        return {MetricKey.REN_PROD: renewable, ...}
+
+Evidence note: the provider keeps the pre-existing random fallback when no sources are configured.

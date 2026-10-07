@@ -1,0 +1,22 @@
+classDiagram
+    class RenewableSource {
+      <<abstract>>
+      +source_id str
+      +capacity float
+      +get_available_energy(time_index) float
+    }
+    class SolarSource {
+      +get_available_energy(time_index) float
+    }
+    class WindSource {
+      -availability list
+      +get_available_energy(time_index) float
+    }
+    class EnergySourceFactory {
+      +create(kind, source_id, capacity, availability) RenewableSource
+    }
+    RenewableSource <|-- SolarSource
+    RenewableSource <|-- WindSource
+    EnergySourceFactory ..> SolarSource : creates
+    EnergySourceFactory ..> WindSource : creates
+    SimpleForecastProvider o-- RenewableSource : aggregates

@@ -1,0 +1,11 @@
+Pattern: Strategy - Dynamic Tariff Selection
+Language: Java
+Runtime/compiler: version not supplied
+Working folder: Part3/code/strategy_tariff/java
+Command: javac StrategyTariff.java StrategyTariffTest.java; java StrategyTariffTest
+Shared cases: DT01-DT10
+Additional checks: negative prices, invalid peak window, empty dynamic series, negative indices
+Reported output: Strategy tests: 17/17 passed
+Result: PASS - user-confirmed
+Verification source: team statement on 2026-10-07 that all implementations run properly
+Limitation: raw terminal output and JDK version were not supplied to this workspace

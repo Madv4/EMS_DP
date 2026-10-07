@@ -1,0 +1,24 @@
+classDiagram
+    class TariffStrategy {
+      <<abstract>>
+      +get_price(time_index) float
+    }
+    class FlatTariff {
+      -price float
+      +get_price(time_index) float
+    }
+    class TimeOfUseTariff {
+      -peak_price float
+      -off_peak_price float
+      -peak_start int
+      -peak_end int
+      +get_price(time_index) float
+    }
+    class DynamicTariff {
+      -prices list
+      +get_price(time_index) float
+    }
+    TariffStrategy <|-- FlatTariff
+    TariffStrategy <|-- TimeOfUseTariff
+    TariffStrategy <|-- DynamicTariff
+    SimpleForecastProvider --> TariffStrategy : uses

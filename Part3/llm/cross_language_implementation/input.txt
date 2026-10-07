@@ -1,0 +1,21 @@
+Input context supplied to the model:
+
+1. The completed Part 2 Python Strategy collaboration:
+   - TariffStrategy.get_price(time_index)
+   - FlatTariff
+   - TimeOfUseTariff with repeating 24-hour half-open peak window
+   - DynamicTariff with a repeating non-empty non-negative price series
+
+2. The completed Part 2 Python Observer collaboration:
+   - ConsumptionEvent(time_index, by_load)
+   - ConsumptionObserver.update(event)
+   - ConsumptionSubject subscribe, unsubscribe, and notify
+   - ConsumptionAlertObserver with a strictly-greater-than positive threshold
+
+3. Shared dynamic-tariff cases DT01-DT10 from Part3/test_cases/dynamic_tariff.csv.
+
+4. Shared consumption-alert cases CA01-CA05 from Part3/test_cases/consumption_alert.csv.
+
+5. Required languages: Java, Python, JavaScript, and C++.
+
+6. Required separation: one production snippet and one dependency-free test runner per language and pattern.

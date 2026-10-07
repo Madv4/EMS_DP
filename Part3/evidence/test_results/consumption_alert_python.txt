@@ -1,0 +1,10 @@
+Pattern: Observer - Consumption Threshold Alerts
+Language: Python
+Runtime: CPython 3.12.14
+Working folder: Part3/code/observer_consumption_alert/python
+Command: python test_consumption_alert.py
+Shared cases: CA01-CA05
+Additional checks: duplicate subscription, unsubscribe, multiple loads, zero and negative thresholds
+Captured output: Observer tests: 10/10 passed
+Result: PASS
+Verification source: executed in the package-building workspace on 2026-10-07

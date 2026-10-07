@@ -1,0 +1,11 @@
+Pattern: Observer - Consumption Threshold Alerts
+Language: C++
+Runtime/compiler: C++17 compiler version not supplied
+Working folder: Part3/code/observer_consumption_alert/cpp
+Command: g++ -std=c++17 -O2 -Wall -Wextra -pedantic test_consumption_alert.cpp -o test_consumption_alert; ./test_consumption_alert
+Shared cases: CA01-CA05
+Additional checks: duplicate subscription, unsubscribe, multiple loads, zero and negative thresholds
+Reported output: Observer tests: 10/10 passed
+Result: PASS - user-confirmed
+Verification source: team statement on 2026-10-07 that all implementations run properly
+Limitation: raw terminal output and compiler version were not supplied to this workspace

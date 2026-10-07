@@ -1,0 +1,569 @@
+Yes. We can now treat **Part 1 – Pattern Discovery** as a completed baseline.
+
+The important thing is that Part 1 should not just say “the system has energy management.” It should establish **what the current system actually contains**, with repository evidence, and identify the gaps that motivate Part 2.
+
+# Part 1 — Pattern Discovery
+
+## 1.1 Application Overview
+
+The repository is a **FastAPI-based Energy Management System (EMS)** designed for managing energy-consuming loads, forecasting energy conditions, optimizing load schedules, and simulating energy flows.
+
+The README explicitly describes the application as a system for **“scheduling and optimizing energy loads in a simulated environment”**, with portfolio management, forecasting, optimization, metrics, and WebSocket streaming.
+
+The major architectural layers are:
+
+```text
+ems/
+│
+├── interface/
+│   ├── endpoints.py
+│   ├── runtime.py
+│   ├── server.py
+│   └── websocket.py
+│
+├── application/
+│   ├── services/
+│   └── solvers/
+│
+├── domain/
+│   ├── models/
+│   └── ports/
+│
+└── infrastructure/
+    ├── serializer.py
+    ├── simple_forecast_provider.py
+    └── simple_portfolio_repository.py
+```
+
+At the domain level, the main concepts are:
+
+```text
+Portfolio
+    │
+    ├── Load
+    ├── Load
+    └── Load
+         │
+         ↓
+    Optimization
+         │
+         ↓
+       Plan
+         │
+         ↓
+      Metrics
+```
+
+The system therefore already provides a useful foundation for an energy-management application, but several real-world EMS capabilities are either missing or only represented indirectly.
+
+---
+
+# 1.2 Investigation Areas
+
+The case study asks us to investigate:
+
+1. Energy consumption
+2. Smart meters
+3. Users
+4. Tariff management
+5. Renewable-energy sources
+6. Alerts
+7. Reporting
+
+Here is the final classification.
+
+| Investigation Area | Current System | Evidence | Status |
+|---|---|---|---|
+| **Energy Consumption** | Energy-consuming loads and their energy usage are modeled | `Load`, `Metrics`, `LOAD_GRID_DRAW`, `LOAD_REN_DRAW` | 🟢 Present |
+| **Smart Meters** | No physical/device meter abstraction | No meter model/API | 🔴 Absent |
+| **Users** | No user/customer/account management | No user model/authentication API | 🔴 Absent |
+| **Tariff Management** | Grid-price forecasting and cost optimization exist, but no explicit tariff subsystem | `GRID_PRICE`, `cost_vs_emission_weight` | 🟡 Partial |
+| **Renewable Energy Sources** | Renewable production and renewable consumption are modeled | `REN_PROD`, `LOAD_REN_DRAW`, `REN_SPILL` | 🟢 Present |
+| **Alerts** | No domain-level alert/notification mechanism | No alert model/rules/API | 🔴 Absent |
+| **Reporting** | Detailed time-series metrics and live streaming exist, but no dedicated reporting module | `Metrics`, WebSocket | 🟡 Partial |
+
+Now let's justify each one from the actual repository.
+
+---
+
+# 1.3 Energy Consumption
+
+### Status: 🟢 Present
+
+This is one of the strongest existing features.
+
+The repository contains a `Load` domain model:
+
+```python
+@dataclass(slots=True)
+class Load:
+    """Represents a power drawing asset"""
+
+    load_id: uuid.UUID = field(default_factory=uuid.uuid4)
+    status: LoadStatus = LoadStatus.OFF
+    priority: int = 1
+    throughput: tuple[float, float] = (0.1, 0.1)
+    run_duration: int = 1
+```
+
+A load therefore represents an energy-consuming asset.
+
+The system also explicitly tracks:
+
+```text
+LOAD_GRID_DRAW
+LOAD_REN_DRAW
+```
+
+These represent energy supplied to loads from:
+
+- the electrical grid
+- renewable energy
+
+The `Metrics` model maintains time-series values for these load metrics.
+
+The optimization solvers also calculate these values. For example, the MILP solver contains variables for grid and renewable energy supplied to loads.
+
+Therefore, the application doesn't merely have a generic “Load” object — **energy consumption is part of the optimization model itself.**
+
+### Important limitation
+
+This is **simulated/modelled consumption**, not consumption collected from real smart meters.
+
+So we should write:
+
+> The system models and tracks energy consumption of loads, but does not currently obtain consumption measurements from physical energy meters.
+
+That distinction will be important later.
+
+---
+
+# 1.4 Smart Meters
+
+### Status: 🔴 Absent
+
+There is no domain entity such as:
+
+```text
+SmartMeter
+Meter
+MeterReading
+MeterData
+Telemetry
+```
+
+and no API such as:
+
+```text
+/meter/
+/meter/readings
+/meter/{id}
+```
+
+The repository instead obtains energy-related values through its forecast mechanism.
+
+For example, `SimpleForecastProvider` generates:
+
+```python
+MetricKey.GRID_PRICE
+MetricKey.GRID_CO2
+MetricKey.GRID_PROD
+MetricKey.REN_PROD
+```
+
+using simulated values.
+
+So the current architecture is closer to:
+
+```text
+Forecast Provider
+        ↓
+      Metrics
+        ↓
+   Optimization
+```
+
+rather than:
+
+```text
+Smart Meter
+     ↓
+Meter Readings
+     ↓
+Consumption Data
+     ↓
+Optimization
+```
+
+### Conclusion
+
+There is **no smart-meter integration in the current application**.
+
+This is a clear candidate for future evolution.
+
+---
+
+# 1.5 Users
+
+### Status: 🔴 Absent
+
+The current system does not have a user/customer domain.
+
+There are no models representing:
+
+```text
+User
+Customer
+Account
+Role
+Permission
+```
+
+There is also no authentication or authorization layer.
+
+The API is centered around:
+
+```text
+/portfolio/
+/load/
+/ws
+```
+
+rather than:
+
+```text
+/user/
+/customer/
+/account/
+/auth/
+```
+
+The current architecture essentially treats the EMS as a system-level service rather than a multi-user application.
+
+### Conclusion
+
+> User management is not currently implemented.
+
+This is another genuine architectural gap.
+
+---
+
+# 1.6 Tariff Management
+
+### Status: 🟡 Partial
+
+This one needs careful wording.
+
+The repository **does have energy pricing**.
+
+`MetricKey` contains:
+
+```python
+GRID_PRICE = "grid_price"
+```
+
+and `SimpleForecastProvider` generates grid prices:
+
+```python
+MetricKey.GRID_PRICE: self.random.uniform(0.1, 0.3)
+```
+
+The optimization algorithms also use `grid_price`.
+
+For example, the heuristic solver calculates cost using:
+
+```python
+total_cost = sum(price * usage for price, usage in zip(grid_price, grid_usage))
+```
+
+The portfolio also contains:
+
+```python
+cost_vs_emission_weight
+```
+
+So electricity price definitely influences optimization.
+
+However, there is **no explicit tariff-management subsystem**.
+
+We don't have concepts such as:
+
+```text
+Tariff
+TariffPlan
+PeakRate
+OffPeakRate
+TimeOfUseTariff
+DynamicTariff
+```
+
+and there is no dedicated tariff API.
+
+Therefore:
+
+> The current system supports grid-price forecasting and cost-aware optimization, but does not provide an explicit tariff-management model.
+
+That makes **Tariff Management = Partial**, rather than Absent.
+
+This distinction will make the case study much stronger.
+
+---
+
+# 1.7 Renewable Energy Sources
+
+### Status: 🟢 Present
+
+Renewable energy is already significantly represented in the system.
+
+The metric model contains:
+
+```python
+REN_PROD
+LOAD_REN_DRAW
+REN_SPILL
+```
+
+The forecast provider generates renewable production:
+
+```python
+MetricKey.REN_PROD: self.random.uniform(2.0, 8.0)
+```
+
+The optimization layer also explicitly considers renewable production.
+
+Conceptually:
+
+```text
+             ┌──────────────┐
+             │ Grid Energy  │
+             └──────┬───────┘
+                    │
+                    ↓
+                 Loads
+                    ↑
+                    │
+             ┌──────┴───────┐
+             │  Renewable   │
+             │   Energy     │
+             └──────────────┘
+```
+
+The solver even models renewable energy that is produced but not consumed:
+
+```text
+REN_SPILL
+```
+
+Therefore renewable energy isn't merely mentioned in documentation; it participates in the actual optimization logic.
+
+### Limitation
+
+The system does **not** explicitly model different renewable assets such as:
+
+```text
+Solar Panel
+Wind Turbine
+Hydro Plant
+```
+
+It currently represents renewable production more generically through `REN_PROD`.
+
+That gives us a very useful Part 2 evolution opportunity: **turn the generic renewable-energy representation into an extensible renewable-source model.**
+
+---
+
+# 1.8 Alerts
+
+### Status: 🔴 Absent
+
+There is no explicit alert domain.
+
+We don't find concepts such as:
+
+```text
+Alert
+AlertRule
+Notification
+Threshold
+AlertSeverity
+```
+
+There is also no alert API.
+
+The WebSocket system should **not** be classified as an alert system.
+
+The WebSocket provides live EMS context updates:
+
+```python
+snapshot = {
+    "portfolio": ...,
+    "forward": ...,
+    "backward": ...
+}
+```
+
+This allows a future dashboard to monitor the system, but it doesn't itself determine:
+
+> “Consumption exceeded the allowed threshold.”
+
+or
+
+> “Grid price is unusually high.”
+
+Therefore:
+
+> Real-time data delivery exists, but business-level consumption alerts are not implemented.
+
+This distinction is important.
+
+---
+
+# 1.9 Reporting
+
+### Status: 🟡 Partial
+
+The system has a substantial metrics infrastructure.
+
+`Metrics` maintains time-series information for:
+
+```text
+GRID_PRICE
+GRID_CO2
+GRID_PROD
+REN_PROD
+LOAD_GRID_DRAW
+LOAD_REN_DRAW
+REN_SPILL
+```
+
+It also distinguishes:
+
+```text
+Forward Metrics
+        ↓
+Forecasts / Plans
+
+Backward Metrics
+        ↓
+Actuals
+```
+
+This is already a strong foundation for reporting.
+
+The WebSocket also broadcasts:
+
+```text
+Portfolio
+Forward Metrics
+Backward Metrics
+```
+
+to connected clients.
+
+So the data necessary to create reports is available.
+
+However, the repository doesn't contain a dedicated:
+
+```text
+Report
+ReportService
+ReportGenerator
+Reporting API
+CSV/PDF export
+```
+
+Therefore:
+
+> The application provides the underlying metrics and live data required for reporting, but does not currently implement a dedicated reporting subsystem.
+
+Hence **Partial**.
+
+---
+
+# 1.10 Final Part 1 Classification
+
+This is the table I recommend using directly in your case study:
+
+| Area | Status | Finding |
+|---|---|---|
+| **Energy Consumption** | 🟢 Present | Loads represent energy-consuming assets and energy drawn from grid/renewables is tracked and optimized. |
+| **Smart Meters** | 🔴 Absent | No smart-meter, meter-reading, or telemetry abstraction exists. |
+| **Users** | 🔴 Absent | No user/customer/account or authentication model exists. |
+| **Tariff Management** | 🟡 Partial | Grid prices are forecast and used in optimization, but there is no explicit tariff-management subsystem. |
+| **Renewable Energy Sources** | 🟢 Present | Renewable production, renewable supply to loads, and renewable spill are explicitly modeled. |
+| **Alerts** | 🔴 Absent | No alert rules, thresholds, notifications, or alert APIs exist. |
+| **Reporting** | 🟡 Partial | Rich forward/backward metrics and WebSocket streaming exist, but no dedicated reporting module exists. |
+
+---
+
+# 1.11 What Part 1 Tells Us
+
+The most important conclusion is that **the existing application is not empty or poorly designed**. It already has a fairly clear energy-management core.
+
+Its current focus is:
+
+```text
+             ENERGY MANAGEMENT SYSTEM
+                       │
+          ┌────────────┴────────────┐
+          ↓                         ↓
+     Load/Portfolio             Forecasts
+          │                         │
+          └────────────┬────────────┘
+                       ↓
+                  Optimization
+                       │
+                       ↓
+                     Plan
+                       │
+                       ↓
+                    Metrics
+                       │
+                       ↓
+                  WebSocket
+```
+
+But a more complete real-world EMS would extend this toward:
+
+```text
+Users
+  │
+  ↓
+Smart Meters
+  │
+  ↓
+Consumption Data ─────────────┐
+  │                           │
+  ↓                           ↓
+Tariff Management        Renewable Sources
+  │                           │
+  └──────────────┬────────────┘
+                 ↓
+            Optimization
+                 │
+                 ↓
+              Alerts
+                 │
+                 ↓
+             Reporting
+```
+
+This gives us a **clear justification for Part 2** rather than inventing changes arbitrarily.
+
+---
+
+## Part 1 conclusion
+
+A suitable conclusion for the case study is:
+
+> **The existing FastAPI-based Energy Management System provides a strong foundation for energy-load management through portfolio and load modeling, energy-price and production forecasting, renewable-energy allocation, optimization, simulation, and real-time metric streaming. However, several capabilities expected in a more comprehensive energy-management platform are missing or only partially supported. Smart-meter integration, user management, explicit tariff management, consumption alerts, and dedicated reporting are either absent or incomplete. These findings establish the baseline architecture and motivate the evolutionary changes considered in Part 2.**
+
+### Part 1 is now complete.
+
+The next stage, **Part 2**, can use these exact findings to show how the system evolves for the three required scenarios:
+
+1. **Dynamic tariffs**
+2. **Renewable-energy integration**
+3. **Consumption alerts**
+
+And importantly, because renewable energy already exists in the repository, Part 2 should **extend/refactor the existing renewable-energy support**, rather than falsely presenting it as something being added from zero.

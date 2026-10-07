@@ -1,0 +1,20 @@
+Input artifact: original `energy-management-system-main.zip` repository.
+
+Primary inspected locations:
+
+- `README.md`
+- `ems/domain/models/portfolio.py`
+- `ems/domain/models/metrics.py`
+- `ems/domain/models/types.py`
+- `ems/domain/ports/forecast_provider.py`
+- `ems/domain/ports/portfolio_repository.py`
+- `ems/application/services/deploy_plan.py`
+- `ems/application/solvers/base.py`
+- `ems/application/solvers/milp_solver.py`
+- `ems/application/solvers/heuristic_solver.py`
+- `ems/infrastructure/simple_forecast_provider.py`
+- `ems/interface/runtime.py`
+- `ems/interface/endpoints.py`
+- `ems/interface/websocket.py`
+
+Requested investigation areas: energy consumption, smart meters, users, tariff management, renewable-energy sources, alerts, and reporting.

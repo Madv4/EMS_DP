@@ -1,0 +1,39 @@
+classDiagram
+    class ForecastProvider {
+      <<abstract>>
+      +get_forecast_entry()
+      +validate(entry)
+    }
+    class SimpleForecastProvider {
+      +get_forecast_entry()
+    }
+    ForecastProvider <|-- SimpleForecastProvider
+
+    class PortfolioRepository {
+      <<abstract>>
+      +save_portfolio(portfolio)
+      +open_portfolio(id)
+      +delete_portfolio(id)
+    }
+    class SimplePortfolioRepository
+    PortfolioRepository <|-- SimplePortfolioRepository
+
+    class EMSRuntime {
+      +subscribers
+      +submit(command)
+      +broadcast()
+    }
+    class WebSocketClient
+    EMSRuntime o-- WebSocketClient : broadcasts snapshots
+
+    class DeployPlan {
+      +generate_plan(portfolio, metrics)
+    }
+    class MILPSolver {
+      +solve(parameters)
+    }
+    class HeuristicSolver {
+      +solve(parameters)
+    }
+    DeployPlan --> MILPSolver : primary
+    DeployPlan --> HeuristicSolver : fallback
